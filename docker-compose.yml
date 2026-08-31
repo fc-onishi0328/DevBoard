@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: ./backend
+    container_name: devboard-backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/src:/app/src
+      - backend-data:/app/data
+    environment:
+      - PORT=3001
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: devboard-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:
