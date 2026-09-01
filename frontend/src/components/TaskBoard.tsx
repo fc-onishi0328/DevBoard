@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Project, Task, TaskStatus, TASK_STATUSES } from "../types";
+import { TaskCard } from "./TaskCard";
 
 interface Props {
   project: Project;
@@ -92,49 +93,13 @@ export function TaskBoard({
               ) : (
                 <ul className="task-list">
                   {columnTasks.map((task) => (
-                    <li className="task-card" key={task.id}>
-                      <div className="task-title-button">
-                        <div className="task-title">{task.title}</div>
-                        <div className="task-delete">
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => onDeleteTask(task.id)}
-                            title="delete task"
-                            disabled={loadingTaskId === task.id}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                      <div className="task-actions">
-                        <select
-                          className="status-select"
-                          value={task.status}
-                          onChange={(e) =>
-                            onChangeTask(task.id, e.target.value as TaskStatus, task.title, task.dueDate)
-                          }
-                          disabled={loadingTaskId === task.id}
-                        >
-                          {TASK_STATUSES.map((s) => (
-                            <option key={s.value} value={s.value}>
-                              {s.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="task-due-date">
-                        <input
-                          className="text-input"
-                          type="date"
-                          placeholder="due date"
-                          value={task.dueDate ?? ""}
-                          onChange={(e) =>
-                            onChangeTask(task.id, task.status, task.title, e.target.value || null)
-                          }
-                          disabled={loadingTaskId === task.id}
-                        />
-                      </div>
-                    </li>
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      loading={loadingTaskId === task.id}
+                      onChangeTask={onChangeTask}
+                      onDeleteTask={onDeleteTask}
+                    />
                   ))}
                 </ul>
               )}
