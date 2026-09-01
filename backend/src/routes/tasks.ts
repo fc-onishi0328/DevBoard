@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { db } from "../db";
-import { Task, TASK_STATUSES, TaskStatus } from "../types";
+import { Task, TASK_STATUSES, TaskStatus, isValidDueDate } from "../types";
 
 // プロジェクトに紐づくタスクの一覧取得・作成
 // mergeParams: true で親ルーターの :projectId を受け取れるようにする
@@ -79,12 +79,33 @@ tasksRouter.patch("/:taskId", (req: Request, res: Response) => {
   if (!existing) {
     return res.status(404).json({ error: "タスクが見つかりません" });
   }
+  let updateTitle: string;
+  if (title !== undefined && typeof title !== "string") {
+    return res.status(400).json({ error: "title は文字列で入力してください。" })
+  }
+  if (title === undefined) {
+    updateTitle = existing.title
+  } else {
+    updateTitle = title.trim()
+  }
+
+  if (typeof updateTitle === "string" && updateTitle.length === 0) {
+    return res.status(400).json({ error: "title は必須です。" })
+  }
 
   if (status !== undefined && !TASK_STATUSES.includes(status as TaskStatus)) {
     return res.status(400).json({
       error: `status は ${TASK_STATUSES.join(", ")} のいずれかである必要があります`,
     });
   }
+  const nextStatus = (status as TaskStatus) ?? existing.status;
+  
+  if (dueDate !== undefined && dueDate !== null && !isValidDueDate(dueDate)) {
+    return res
+      .status(400)
+      .json({ error: "dueDate は YYYY-MM-DD 形式である必要があります" });
+  }
+
   let updateDueDate: string | null;
   if (dueDate === undefined) {
     updateDueDate = existing.dueDate
@@ -92,26 +113,12 @@ tasksRouter.patch("/:taskId", (req: Request, res: Response) => {
     updateDueDate = dueDate
   }
 
-  function isHyphenDate(str: string): boolean {
-    // YYYY-MM-DD 形式にマッチする正規表現（例: 2026-06-07）
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
-    return regex.test(str);
-  }
 
-  if (updateDueDate != null && !isHyphenDate(updateDueDate)) {
-    return res.status(400).json({ error: "dueDate の記載方法が誤っています(yyyy-mm-dd)" })
-  }
-
-  const nextTitle =
-    typeof title === "string" && title.trim().length > 0
-      ? title.trim()
-      : existing.title;
-  const nextStatus = (status as TaskStatus) ?? existing.status;
   const now = new Date().toISOString();
 
   db.prepare(
     "UPDATE tasks SET title = ?, dueDate = ?, status = ?, updatedAt = ? WHERE id = ?"
-  ).run(nextTitle, updateDueDate, nextStatus, now, taskId);
+  ).run(updateTitle, updateDueDate, nextStatus, now, taskId);
 
   const updated = db.prepare("SELECT * FROM tasks WHERE id = ?").get(taskId);
   res.json(updated);

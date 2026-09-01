@@ -13,11 +13,24 @@ export function TaskCard({
   onChangeTask,
   onDeleteTask,
 }: Props) {
+    const [localTitle, setLocalTitle] = useState(task.title);
     const [localDueDate, setLocalDueDate] = useState(task.dueDate ?? "");
     return (
         <li className="task-card">
             <div className="task-title-button">
-                <div className="task-title">{task.title}</div>
+                <div className="task-title">
+                    <input
+                        className="text-input"
+                        type="text"
+                        placeholder="title"
+                        value={localTitle}
+                        onChange={(e) =>
+                            setLocalTitle(e.target.value)
+                        }
+                        onBlur={() => { onChangeTask(task.id, task.status, localTitle, localDueDate || null) }}
+                        disabled={loading}
+                    />
+                </div>
                 <div className="task-delete">
                     <button
                         className="btn btn-danger"
@@ -34,7 +47,7 @@ export function TaskCard({
                     className="status-select"
                     value={task.status}
                     onChange={(e) =>
-                        onChangeTask(task.id, e.target.value as TaskStatus, task.title, task.dueDate)
+                        onChangeTask(task.id, e.target.value as TaskStatus, localTitle, localDueDate || null)
                     }
                     disabled={loading}
                 >
@@ -54,7 +67,7 @@ export function TaskCard({
                     onChange={(e) =>
                         setLocalDueDate(e.target.value)
                     }
-                    onBlur={() => { onChangeTask(task.id, task.status, task.title, localDueDate || null) }}
+                    onBlur={() => { onChangeTask(task.id, task.status, localTitle, localDueDate || null) }}
                     disabled={loading}
                 />
             </div>
