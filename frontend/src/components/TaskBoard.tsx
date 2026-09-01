@@ -23,15 +23,21 @@ export function TaskBoard({
   onDeleteTask,
 }: Props) {
   const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || submitting) return;
+    let postDueDate: string | null;
+    if (dueDate === "") postDueDate = null
+    else postDueDate = dueDate
     setSubmitting(true);
     try {
-      await onCreateTask(title.trim(), null);
+      await onCreateTask(title.trim(), postDueDate);
       setTitle("");
+      setDueDate("");
     } finally {
       setSubmitting(false);
     }
@@ -49,6 +55,14 @@ export function TaskBoard({
           placeholder="new task title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          disabled={submitting}
+        />
+        <input
+          className="text-input"
+          type="date"
+          placeholder="due date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
           disabled={submitting}
         />
         <button
@@ -79,7 +93,19 @@ export function TaskBoard({
                 <ul className="task-list">
                   {columnTasks.map((task) => (
                     <li className="task-card" key={task.id}>
-                      <div className="task-title">{task.title}</div>
+                      <div className="task-title-button">
+                        <div className="task-title">{task.title}</div>
+                        <div className="task-delete">
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => onDeleteTask(task.id)}
+                            title="delete task"
+                            disabled={loadingTaskId === task.id}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
                       <div className="task-actions">
                         <select
                           className="status-select"
@@ -95,14 +121,18 @@ export function TaskBoard({
                             </option>
                           ))}
                         </select>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => onDeleteTask(task.id)}
-                          title="delete task"
+                      </div>
+                      <div className="task-due-date">
+                        <input
+                          className="text-input"
+                          type="date"
+                          placeholder="due date"
+                          value={task.dueDate ?? ""}
+                          onChange={(e) =>
+                            onChangeTask(task.id, task.status, task.title, e.target.value || null)
+                          }
                           disabled={loadingTaskId === task.id}
-                        >
-                          ✕
-                        </button>
+                        />
                       </div>
                     </li>
                   ))}

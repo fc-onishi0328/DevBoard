@@ -264,16 +264,30 @@ body {
   padding: 8px 10px;
 }
 
+.task-title-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .task-title {
   font-size: 13px;
   margin-bottom: 8px;
   word-break: break-word;
 }
 
+.task-delete {
+}
+
+.task-due-date {
+}
+
 .task-actions {
   display: flex;
   gap: 6px;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .status-select {
